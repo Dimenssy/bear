@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <!-- 移动端优化视口 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover, shrink-to-fit=no">
+  <title>🎂 莉莉 · 生日快乐 🎂</title>
+  <!-- 字体 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- canvas-confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(145deg, #fdf3e7 0%, #ffeae5 40%, #e9eefa 100%);
+      background-attachment: fixed;
+      font-family: 'Raleway', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      position: relative;
+      overflow-x: hidden;
+      /* 移动端防止误触缩放 */
+      touch-action: pan-y; 
+    }
+
+    /* 云朵装饰 (手机端简化数量但保留氛围) */
+    .cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 80px;
+      box-shadow: 0 15px 30px rgba(200, 180, 200, 0.08);
+      backdrop-filter: blur(5px);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .cloud1 { width: 180px; height: 60px; top: 5%; left: -20px; }
+    .cloud2 { width: 220px; height: 70px; bottom: 10%; right: -20px; }
+    .cloud::before, .cloud::after {
+      content: '';
+      position: absolute;
+      background: inherit;
+      border-radius: 50%;
+      box-shadow: inherit;
+    }
+    .cloud::before { width: 70px; height: 70px; top: -25px; left: 15px; }
+    .cloud::after { width: 90px; height: 90px; top: -35px; left: 60px; }
+
+    /* 星星 */
+    .star {
+      position: absolute;
+      color: #ffe2a4;
+      font-size: 20px;
+      filter: drop-shadow(0 0 6px #fff3d1);
+      pointer-events: none;
+      z-index: 1;
+      animation: twinkle 3s infinite alternate;
+    }
+    @keyframes twinkle {
+      0% { opacity: 0.5; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1.1); }
+    }
+
+    /* 主卡片 —— 手机优化：内边距更紧凑，圆角更大 */
+    .birthday-card {
+      position: relative;
+      z-index: 30;
+      width: 100%;
+      max-width: 480px;  /* 手机黄金宽度 */
+      background: rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border-radius: 56px;
+      padding: 28px 18px 24px;
+      box-shadow: 0 30px 50px -10px rgba(150, 120, 140, 0.2),
+                  0 6px 18px rgba(255, 220, 210, 0.3),
+                  inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 245, 240, 0.5);
+      text-align: center;
+    }
+
+    /* 标题 */
+    .cake-icon {
+      font-size: 48px;
+      margin-bottom: 6px;
+      filter: drop-shadow(0 6px 10px rgba(200, 150, 160, 0.25));
+      cursor: pointer;
+      display: inline-block;
+      transition: transform 0.15s;
+    }
+    .cake-icon:active { transform: scale(0.94); }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #5e4b56;
+      text-shadow: 3px 3px 0 #fce3d4;
+      margin-bottom: 6px;
+      word-break: break-word;
+      line-height: 1.2;
+    }
+
+    .birthday-badge {
+      background: rgba(250, 225, 215, 0.6);
+      backdrop-filter: blur(8px);
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #70555f;
+      margin-bottom: 18px;
+      border: 1px solid #ffe8de;
+      box-shadow: inset 0 2px 6px white;
+    }
+
+    /* 朋友区 */
+    .friend-section {
+      background: rgba(255, 245, 240, 0.6);
+      border-radius: 40px;
+      padding: 16px 16px 12px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(8px);
+      border: 1px solid #fadcd2;
+      box-shadow: inset 0 2px 6px #fff9f5, 0 4px 10px rgba(180, 140, 150, 0.1);
+    }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .label-row i {
+      font-size: 1.5rem;
+      color: #c2859e;
+    }
+    .label-row span {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #4a3840;
+    }
+
+    .name-input-wrapper {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50px;
+      padding: 4px 6px 4px 18px;
+      border: 1px solid #f5cdc0;
+      box-shadow: 0 3px 8px rgba(200, 150, 160, 0.08);
+    }
+    .name-input-wrapper i {
+      font-size: 1.3rem;
+      color: #b2849a;
+      margin-right: 6px;
+    }
+    #friendNameInput {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 1.7rem;
+      font-weight: 500;
+      font-family: 'Raleway', sans-serif;
+      color: #453138;
+      padding: 10px 4px;
+      text-align: center;
+      min-width: 0;
+    }
+    #friendNameInput::placeholder {
+      color: #bfa5ad;
+      font-weight: 300;
+    }
+    .edit-hint {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      opacity: 0.7;
+      color: #6d5560;
+    }
+
+    /* 祝福卡片 */
+    .bless-message {
+      background: rgba(253, 242, 238, 0.75);
+      border-radius: 40px;
+      padding: 20px 14px;
+      margin: 18px 0 20px;
+      backdrop-filter: blur(8px);
+      border: 1px solid #fcd9cf;
+      box-shadow: 0 8px 0 #d4b9b0, inset 0 2px 12px white;
+    }
+
+    .message-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #4d3640;
+      line-height: 1.3;
+    }
+    .message-text i {
+      color: #bf7f94;
+      margin: 0 6px;
+      font-size: 1.4rem;
+    }
+    #dynamicBlessing {
+      display: block;
+      margin-top: 10px;
+      font-family: 'Raleway', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #6d4c5b;
+      background: rgba(255, 250, 240, 0.6);
+      padding: 8px 12px;
+      border-radius: 35px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* 日期区域 */
+    .date-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .today-box, .birthday-box {
+      background: rgba(255, 240, 235, 0.7);
+      padding: 6px 16px;
+      border-radius: 40px;
+      backdrop-filter: blur(5px);
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: #5f4652;
+      border: 1px solid #f7d1c4;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .birthday-box {
+      background: #fbe2d9b0;
+      border-color: #eec0b2;
+      cursor: pointer;
+    }
+
+    /* 游戏区域 (手机优化) */
+    .game-section {
+      background: rgba(250, 235, 245, 0.35);
+      backdrop-filter: blur(8px);
+      border-radius: 40px;
+      padding: 18px 12px 16px;
+      margin: 16px 0 18px;
+      border: 2px dashed #fbcbc1;
+      box-shadow: inset 0 0 0 3px #fff9f2;
+    }
+
+    .game-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #7a5568;
+      margin-bottom: 12px;
+    }
+    .game-title i {
+      font-size: 1.5rem;
+      color: #e07a9a;
+    }
+
+    /* canvas响应式 */
+    .balloon-game-canvas {
+      display: block;
+      margin: 0 auto;
+      background: rgba(255, 250, 245, 0.5);
+      border-radius: 40px;
+      box-shadow: inset 0 4px 10px rgba(150, 120, 130, 0.05), 0 5px 0 #dab9ae;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      aspect-ratio: 400 / 240;
+      cursor: pointer;
+      touch-action: none;  /* 禁止触摸滚动 */
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .game-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding: 0 4px;
+    }
+    .balloon-count {
+      background: #ffeae1;
+      padding: 5px 16px;
+      border-radius: 35px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #624752;
+    }
+    .reset-game-btn {
+      background: rgba(255,245,240,0.6);
+      border: 1.5px solid #d9b2a8;
+      padding: 6px 16px;
+      border-radius: 35px;
+      font-weight: 600;
+      color: #735b63;
+      backdrop-filter: blur(5px);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .reset-game-btn:active {
+      background: #f7dbd2;
+      border-color: #c28d97;
+    }
+
+    /* 庆祝按钮 */
+    .celebrate-btn {
+      background: #e1a7b3;
+      border: none;
+      color: #fff9f5;
+      font-weight: 700;
+      font-size: 1.8rem;
+      padding: 16px 20px;
+      border-radius: 60px;
+      width: 100%;
+      font-family: 'Raleway', sans-serif;
+      box-shadow: 0 12px 0 #b07989, 0 6px 18px rgba(190, 140, 150, 0.3);
+      cursor: pointer;
+      transition: all 0.1s;
+      border: 2px solid #fce3db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 12px 0 10px;
+      letter-spacing: 1px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .celebrate-btn:active {
+      transform: translateY(6px);
+      box-shadow: 0 6px 0 #b07989, 0 6px 15px rgba(180, 120, 130, 0.3);
+    }
+
+    /* 底部 */
+    .footer-note {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      color: #7f6572;
+      font-weight: 500;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+    .secret-tip {
+      cursor: pointer;
+    }
+    .clover-icon {
+      font-size: 1.6rem;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* toast提示 */
+    .toast-message {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(100, 60, 70, 0.85);
+      backdrop-filter: blur(10px);
+      color: #fef0e8;
+      padding: 12px 22px;
+      border-radius: 50px;
+      font-weight: 500;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.25s;
+      pointer-events: none;
+      border: 1px solid #f7cfc2;
+      font-size: 1rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      white-space: nowrap;
+      max-width: 90vw;
+    }
+
+    /* 超小屏微调 */
+    @media (max-width: 380px) {
+      .birthday-card { padding: 20px 12px; }
+      h1 { font-size: 2.5rem; }
+      .message-text { font-size: 1.5rem; }
+      .celebrate-btn { font-size: 1.5rem; }
+      .toast-message { white-space: normal; }
+    }
+
+    /* 禁用选中 */
+    .no-select {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+  </style>
+</head>
+<body class="no-select">
+  <!-- 云朵 -->
+  <div class="cloud cloud1"></div>
+  <div class="cloud cloud2"></div>
+  <div class="star" style="top: 6%; left: 8%;">✨</div>
+  <div class="star" style="top: 22%; right: 10%;">🌸</div>
+  <div class="star" style="bottom: 15%; left: 12%;">🕊️</div>
+
+  <main class="birthday-card">
+    <!-- 蛋糕彩蛋 -->
+    <div class="cake-icon" id="cakeSurprise">
+      <i class="fas fa-birthday-cake"></i> 
+    </div>
+    <h1>蔡莉莉</h1>
+    <div class="birthday-badge">
+      <i class="fas fa-feather-alt"></i> 四月九日 · 优雅灵动 <i class="fas fa-feather-alt"></i>
+    </div>
+
+    <!-- 朋友名字 -->
+    <div class="friend-section">
+      <div class="label-row">
+        <i class="fas fa-hand-holding-heart"></i>
+        <span>亲爱的</span>
+        <i class="fas fa-heart" style="color: #d47a92;"></i>
+      </div>
+      <div class="name-input-wrapper">
+        <i class="fas fa-pen"></i>
+        <input type="text" id="friendNameInput" value="莉莉" maxlength="20" placeholder="莉莉" inputmode="text">
+      </div>
+      <div class="edit-hint">
+        <i class="fas fa-arrow-up"></i> 点击修改名字，祝福自动更新
+      </div>
+    </div>
+
+    <!-- 祝福语 -->
+    <div class="bless-message" id="blessingCard">
+      <div class="message-text">
+        <i class="fas fa-quote-left"></i> 
+        <span id="greetingPrefix">愿</span><span id="nameInBlessing">莉莉</span>
+        <i class="fas fa-quote-right"></i>
+      </div>
+      <div id="dynamicBlessing">
+        🎀 知性如你，可爱如你，生日快乐 🎀
+      </div>
+    </div>
+
+    <!-- 日期与生日盒子 -->
+    <div class="date-section">
+      <div class="today-box">
+        <i class="fas fa-calendar-day"></i>
+        <span id="currentDate"></span>
+      </div>
+      <div class="birthday-box" id="birthdayClick">
+        <i class="fas fa-cake-candles"></i>
+        <span>🎂 04.09  🎂</span>
+        <i class="fas fa-gift"></i>
+      </div>
+    </div>
+
+    <!-- 小游戏：戳气球 -->
+    <div class="game-section">
+      <div class="game-title">
+        <i class="fas fa-balloon"></i>
+        <span>戳气球 · 收祝福</span>
+        <i class="fas fa-gift"></i>
+      </div>
+      <canvas id="balloonGameCanvas" class="balloon-game-canvas" width="400" height="240"></canvas>
+      <div class="game-footer">
+        <span class="balloon-count" id="balloonCounter">🎈 还剩 5 个</span>
+        <button class="reset-game-btn" id="resetGameBtn"><i class="fas fa-rotate-right"></i> 再来一局</button>
+      </div>
+      <div style="font-size:0.75rem; margin-top:8px; opacity:0.7;">戳破气球，随机掉落祝福语 ✨</div>
+    </div>
+
+    <!-- 庆祝按钮 -->
+    <button class="celebrate-btn" id="celebrateBtn">
+      <i class="fas fa-champagne-glasses"></i>
+      为莉莉庆祝
+      <i class="fas fa-sparkles"></i>
+    </button>
+
+    <!-- 底部彩蛋 -->
+    <div class="footer-note">
+      <span class="secret-tip" id="secretHint"><i class="far fa-smile-wink"></i> 点蛋糕有惊喜</span>
+      <span class="clover-icon" id="cloverSecret">🍀</span>
+    </div>
+    <div style="margin-top: 8px; opacity:0.6; font-size:0.8rem;">
+      ✦ 莉酱 · 生日快乐 ✦
+    </div>
+  </main>
+
+  <div id="toast" class="toast-message">✨ 莉莉，永远被爱包围 ✨</div>
+
+  <script>
+    (function(){
+      "use strict";
+
+      // DOM 元素
+      const nameInput = document.getElementById('friendNameInput');
+      const nameSpan = document.getElementById('nameInBlessing');
+      const greetingPrefix = document.getElementById('greetingPrefix');
+      const dynamicBlessing = document.getElementById('dynamicBlessing');
+      const currentDateEl = document.getElementById('currentDate');
+      const celebrateBtn = document.getElementById('celebrateBtn');
+      const cakeIcon = document.getElementById('cakeSurprise');
+      const birthdayBox = document.getElementById('birthdayClick');
+      const clover = document.getElementById('cloverSecret');
+      const toast = document.getElementById('toast');
+      const balloonCanvas = document.getElementById('balloonGameCanvas');
+      const ctx = balloonCanvas.getContext('2d');
+      const balloonCounterSpan = document.getElementById('balloonCounter');
+
+      // 祝福语库
+      const blessingList = [
+        { prefix: '愿', suffix: '莉莉，知性如诗，笑靥如花，每一天都闪闪发光 ✨' },
+        { prefix: '祝', suffix: '莉酱，永远保持那份可爱与智慧，生日快乐呀 🎂' },
+        { prefix: '愿', suffix: '莉莉，眼中有星辰，心中有山海，岁岁温柔 🌸' },
+        { prefix: '祝', suffix: '蔡莉莉，新的一岁，自由又浪漫，所愿皆成真 🕊️' },
+        { prefix: '愿', suffix: '莉酱，被时光偏爱，优雅而热烈地绽放 💐' },
+        { prefix: '祝', suffix: '莉莉，生活明朗，万物可爱，四月九日快乐！ 🎈' },
+        { prefix: '愿', suffix: '莉莉，永远轻盈，永远滚烫，做最快乐的自己 🌈' },
+        { prefix: '祝', suffix: '莉酱，所行皆坦途，所遇皆温柔 🍀' }
+      ];
+
+      // 更新名字
+      function updateNameDisplay() {
+        let raw = nameInput.value.trim();
+        if (!raw) raw = '莉莉';
+        nameSpan.textContent = raw;
+      }
+
+      // 随机祝福
+      function applyRandomBlessing() {
+        const idx = Math.floor(Math.random() * blessingList.length);
+        const b = blessingList[idx];
+        greetingPrefix.textContent = b.prefix;
+        dynamicBlessing.textContent = `🎀 ${b.suffix}`;
+      }
+
+      // 日期更新
+      function updateDate() {
+        const d = new Date();
+        const opt = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+        currentDateEl.textContent = d.toLocaleDateString('zh-CN', opt);
+      }
+
+      // 彩带
+      function fireConfetti(heartMode = false) {
+        confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 }, colors: ['#f9d9d0', '#f6c7c0', '#d9cfe6', '#c1d9d0', '#fce6b4'] });
+        confetti({ particleCount: 60, spread: 60, origin: { y: 0.5, x: 0.3 } });
+        confetti({ particleCount: 60, spread: 60, origin: { y: 0.5, x: 0.7 } });
+        setTimeout(() => confetti({ particleCount: 120, spread: 90 }), 120);
+        if (heartMode) {
+          setTimeout(() => confetti({ particleCount: 120, spread: 80, shapes: ['heart'], colors: ['#f2b5c0', '#e6a0b0'] }), 250);
+        }
+      }
+
+      function showToast(msg) {
+        toast.style.opacity = '1';
+        toast.textContent = msg;
+        setTimeout(() => toast.style.opacity = '0', 2000);
+      }
+
+      // ---------- 气球游戏 (移动端优化) ----------
+      let balloons = [];
+      const BALLOON_RADIUS = 22; // 稍小一点，更容易戳
+      const GAME_WIDTH = 400, GAME_HEIGHT = 240;
+
+      function generateBalloons(count = 5) {
+        const newBalloons = [];
+        const colors = ['#f9b8b0', '#b3cfd9', '#f5d4c9', '#dcc6e0', '#c1e1d2', '#fde2b1'];
+        for (let i = 0; i < count; i++) {
+          let overlap = true;
+          let attempts = 0;
+          let x, y;
+          while (overlap && attempts < 300) {
+            x = 40 + Math.random() * (GAME_WIDTH - 80);
+            y = 45 + Math.random() * (GAME_HEIGHT - 70);
+            overlap = newBalloons.some(b => Math.hypot(b.x - x, b.y - y) < BALLOON_RADIUS * 2.0);
+            attempts++;
+          }
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          newBalloons.push({ x, y, r: BALLOON_RADIUS, color, popped: false });
+        }
+        return newBalloons;
+      }
+
+      function drawBalloons() {
+        ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        balloons.forEach(b => {
+          if (b.popped) return;
+          // 绳
+          ctx.beginPath();
+          ctx.moveTo(b.x, b.y + b.r);
+          ctx.lineTo(b.x + 3, b.y + b.r + 16);
+          ctx.lineTo(b.x - 3, b.y + b.r + 22);
+          ctx.fillStyle = '#b0988a';
+          ctx.fill();
+          // 球
+          ctx.shadowColor = '#c0a0a0';
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.ellipse(b.x, b.y, b.r, b.r*1.2, 0, 0, Math.PI*2);
+          ctx.fillStyle = b.color;
+          ctx.fill();
+          ctx.shadowBlur = 5;
+          ctx.strokeStyle = '#ffffffb0';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          ctx.beginPath();
+          ctx.arc(b.x-5, b.y-5, 4, 0, Math.PI*2);
+          ctx.fillStyle = '#ffffff80';
+          ctx.fill();
+        });
+        updateCounter();
+      }
+
+      function updateCounter() {
+        const remaining = balloons.filter(b => !b.popped).length;
+        balloonCounterSpan.innerHTML = `🎈 还剩 ${remaining} 个`;
+        if (remaining === 0) {
+          showToast('🎉 所有气球戳破！莉莉生日快乐！ 🎉');
+          fireConfetti(true);
+        }
+      }
+
+      function popBalloon(index) {
+        if (index < 0 || index >= balloons.length) return;
+        const balloon = balloons[index];
+        if (balloon.popped) return;
+        balloon.popped = true;
+        drawBalloons();
+        
+        const bless = blessingList[Math.floor(Math.random() * blessingList.length)];
+        showToast(`🎈 ${bless.suffix}`);
+        confetti({ particleCount: 20, spread: 40, origin: { x: balloon.x/GAME_WIDTH, y: balloon.y/GAME_HEIGHT } });
+        
+        if (balloons.every(b => b.popped)) {
+          setTimeout(() => showToast('🎂 莉酱，新的一岁继续闪闪发光！ 🎂'), 800);
+        }
+      }
+
+      // 获取画布坐标（处理缩放）
+      function getCanvasCoords(clientX, clientY) {
+        const rect = balloonCanvas.getBoundingClientRect();
+        const scaleX = balloonCanvas.width / rect.width;
+        const scaleY = balloonCanvas.height / rect.height;
+        const canvasX = (clientX - rect.left) * scaleX;
+        const canvasY = (clientY - rect.top) * scaleY;
+        return { x: Math.max(0, Math.min(GAME_WIDTH, canvasX)), y: Math.max(0, Math.min(GAME_HEIGHT, canvasY)) };
+      }
+
+      function handleCanvasStart(e) {
+        e.preventDefault(); // 防止页面滚动或缩放
+        let clientX, clientY;
+        if (e.touches) {
+          clientX = e.touches[0].clientX;
+          clientY = e.touches[0].clientY;
+        } else {
+          clientX = e.clientX;
+          clientY = e.clientY;
+        }
+        const { x, y } = getCanvasCoords(clientX, clientY);
+        
+        for (let i = balloons.length - 1; i >= 0; i--) {
+          const b = balloons[i];
+          if (b.popped) continue;
+          const dx = x - b.x, dy = y - b.y;
+          if (Math.sqrt(dx*dx + dy*dy) < b.r * 1.3) {
+            popBalloon(i);
+            break;
+          }
+        }
+      }
+
+      function resetGame() {
+        balloons = generateBalloons(5);
+        drawBalloons();
+        showToast('🎈 新气球来啦，戳破收获祝福吧~');
+      }
+
+      // 初始化游戏事件
+      function initGame() {
+        balloons = generateBalloons(5);
+        drawBalloons();
+        
+        // 移动端触摸与鼠标统一
+        balloonCanvas.addEventListener('touchstart', handleCanvasStart, { passive: false });
+        balloonCanvas.addEventListener('mousedown', handleCanvasStart);
+        // 防止从画布开始拖拽页面
+        balloonCanvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+        balloonCanvas.addEventListener('touchend', (e) => e.preventDefault());
+        
+        document.getElementById('resetGameBtn').addEventListener('click', resetGame);
+      }
+
+      // ---------- 彩蛋交互 ----------
+      let cakeClickCount = 0;
+      let cakeTimer;
+      cakeIcon.addEventListener('click', () => {
+        cakeClickCount++;
+        clearTimeout(cakeTimer);
+        cakeTimer = setTimeout(() => cakeClickCount = 0, 800);
+        if (cakeClickCount === 3) showToast('🍰 再点两下，心形雨来啦~');
+        else if (cakeClickCount >= 5) {
+          fireConfetti(true);
+          showToast('💖 莉莉，你值得世间所有美好 💖');
+          cakeClickCount = 0;
+        } else {
+          confetti({ particleCount: 15, spread: 40 });
+        }
+      });
+
+      birthdayBox.addEventListener('click', () => {
+        confetti({ particleCount: 40, spread: 50 });
+        showToast('🎂 四月九日 · 莉酱的专属幸运日 🎂');
+      });
+
+      clover.addEventListener('click', () => {
+        confetti({ particleCount: 35, spread: 45, colors: ['#a7c0a7', '#f2d9d9'] });
+        showToast('🍀 好运永远伴随莉莉！ 🍀');
+      });
+
+      // 长按祝福卡
+      const blessCard = document.getElementById('blessingCard');
+      let pressTimer;
+      function startPress() {
+        pressTimer = setTimeout(() => {
+          showToast('🌸 蔡莉莉，你如四月春风，温柔明亮 🌸');
+          confetti({ particleCount: 25 });
+        }, 600);
+      }
+      blessCard.addEventListener('touchstart', (e) => { startPress(); });
+      blessCard.addEventListener('touchend', () => clearTimeout(pressTimer));
+      blessCard.addEventListener('touchcancel', () => clearTimeout(pressTimer));
+      blessCard.addEventListener('mousedown', startPress);
+      blessCard.addEventListener('mouseup', () => clearTimeout(pressTimer));
+      blessCard.addEventListener('mouseleave', () => clearTimeout(pressTimer));
+
+      // 庆祝按钮
+      function handleCelebrate() {
+        fireConfetti();
+        applyRandomBlessing();
+        updateNameDisplay();
+        celebrateBtn.style.transform = 'scale(0.97)';
+        setTimeout(() => celebrateBtn.style.transform = '', 100);
+      }
+      celebrateBtn.addEventListener('click', handleCelebrate);
+
+      // 名字输入
+      nameInput.addEventListener('input', () => {
+        updateNameDisplay();
+        applyRandomBlessing();
+      });
+
+      // 双击卡片彩蛋
+      document.querySelector('.birthday-card').addEventListener('dblclick', (e) => {
+        if (e.target.closest('button') || e.target.closest('canvas')) return;
+        fireConfetti(true);
+        showToast('🎉 莉莉，双倍快乐！ 🎉');
+      });
+
+      // 键盘彩蛋
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'l' || e.key === 'L') {
+          confetti({ particleCount: 35 });
+          showToast('🎀 L for 莉莉/莉酱  🎀');
+        }
+      });
+
+      document.getElementById('secretHint').addEventListener('click', () => {
+        showToast('🍰 连续点击蛋糕图标，有惊喜哦～');
+      });
+
+      // 初始化
+      function init() {
+        nameInput.value = '莉莉';
+        updateNameDisplay();
+        applyRandomBlessing();
+        updateDate();
+        setInterval(updateDate, 60000);
+        initGame();
+        setTimeout(() => confetti({ particleCount: 20 }), 250);
+      }
+      init();
+    })();
+  </script>
+</body>
+</html>
